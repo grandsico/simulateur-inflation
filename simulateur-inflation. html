@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur Inflation France</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #FAF7F2;
+    --dark: #1A1208;
+    --amber: #2E7D32;
+    --amber-light: #43A047;
+    --rust: #1B5E20;
+    --warm-gray: #8A7A6A;
+    --card-bg: #FFFFFF;
+    --border: #E8E0D5;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--dark);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: var(--amber);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    color: white;
+    font-size: 18px;
+    font-style: italic;
+  }
+
+  header span {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 4rem 2rem 2rem;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: var(--dark);
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--amber);
+  }
+
+  .hero p {
+    margin-top: 1rem;
+    color: var(--warm-gray);
+    font-size: 1.1rem;
+    font-weight: 300;
+  }
+
+  .main {
+    max-width: 860px;
+    margin: 2rem auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    box-shadow: 0 4px 24px rgba(26,18,8,0.06);
+  }
+
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--warm-gray);
+    font-weight: 400;
+    margin-bottom: 1.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--warm-gray);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.03em;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    padding: 0.9rem 1.1rem;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.1rem;
+    color: var(--dark);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--amber);
+  }
+
+  .select-wrap {
+    position: relative;
+  }
+
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--amber);
+    pointer-events: none;
+    font-size: 1.2rem;
+  }
+
+  .btn-simulate {
+    width: 100%;
+    padding: 1.1rem;
+    background: var(--amber);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    font-style: italic;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-simulate:hover { background: var(--amber-light); }
+  .btn-simulate:active { transform: scale(0.98); }
+
+  .result {
+    margin-top: 2rem;
+    display: none;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.2rem, 3vw, 1.6rem);
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 2rem;
+    color: var(--dark);
+  }
+
+  .result-headline strong { color: var(--amber); }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    margin-bottom: 1.5rem;
+  }
+
+  canvas { width: 100% !important; }
+
+  .loss-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--rust);
+    color: white;
+    padding: 0.6rem 1.4rem;
+    border-radius: 50px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .result-summary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 0.4rem;
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .result-summary p {
+    color: var(--warm-gray);
+    font-size: 1rem;
+  }
+
+  .result-summary .values {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.8rem;
+  }
+
+  .val-box {
+    text-align: center;
+  }
+
+  .val-box .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark);
+  }
+
+  .val-box .lbl {
+    font-size: 0.78rem;
+    color: var(--warm-gray);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .val-box.lost .num { color: var(--rust); }
+
+  .year-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--warm-gray);
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    padding: 0 4px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    font-size: 0.82rem;
+    color: var(--warm-gray);
+    margin-bottom: 1rem;
+  }
+
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend-line {
+    width: 24px;
+    height: 3px;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">ε</div>
+  <span>Érosion Monétaire · France</span>
+</header>
+
+<div class="hero">
+  <h1>L'<em>inflation</em><br>ronge votre épargne</h1>
+  <p>Simulez la perte de pouvoir d'achat de vos économies en France</p>
+</div>
+
+<div class="main">
+  <div class="card">
+    <div class="card-title">Paramètres de la simulation</div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Montant épargné (€)</label>
+        <input type="number" id="montant" value="1000" min="1" step="100">
+      </div>
+      <div class="field">
+        <label>Durée de la période</label>
+        <div class="select-wrap">
+          <select id="duree">
+            <option value="1">1 an</option>
+            <option value="2">2 ans</option>
+            <option value="3">3 ans</option>
+            <option value="4">4 ans</option>
+            <option value="5">5 ans</option>
+            <option value="10" selected>10 ans</option>
+            <option value="15">15 ans</option>
+            <option value="20">20 ans</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-simulate" onclick="simulate()">Lancer la simulation</button>
+
+    <div class="result" id="result">
+      <div class="result-headline" id="headline"></div>
+
+      <div class="legend">
+        <span><div class="legend-line" style="background:#2E7D32;"></div> Valeur réelle (€)</span>
+None
+      </div>
+
+      <div class="chart-container">
+        <canvas id="myChart"></canvas>
+      </div>
+
+      <div class="result-summary">
+        <div class="loss-badge" id="lossBadge"></div>
+        <p style="margin-top:0.8rem">de pouvoir d'achat perdu sur la période</p>
+        <div class="values">
+          <div class="val-box">
+            <div class="num" id="valInitiale">—</div>
+            <div class="lbl">Montant initial</div>
+          </div>
+          <div class="val-box lost">
+            <div class="num" id="valFinale">—</div>
+            <div class="lbl">Valeur réelle aujourd'hui</div>
+          </div>
+          <div class="val-box lost">
+            <div class="num" id="valPerdue">—</div>
+            <div class="lbl">Pouvoir d'achat perdu</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// Données historiques d'inflation France (INSEE) - taux annuels en %
+const inflationData = {
+  2000: 1.7, 2001: 1.7, 2002: 1.9, 2003: 2.1, 2004: 2.1,
+  2005: 1.7, 2006: 1.7, 2007: 1.5, 2008: 2.8, 2009: 0.1,
+  2010: 1.5, 2011: 2.1, 2012: 2.0, 2013: 0.9, 2014: 0.5,
+  2015: 0.0, 2016: 0.2, 2017: 1.0, 2018: 1.8, 2019: 1.1,
+  2020: 0.5, 2021: 1.6, 2022: 5.2, 2023: 4.9, 2024: 2.3,
+};
+
+// Inflation estimée / projetée pour le futur (hypothèse BCE 2%)
+const INFLATION_FUTURE = 2.0;
+const CURRENT_YEAR = 2025;
+const MAX_HISTORY_YEAR = 2024;
+
+let chartInstance = null;
+
+function simulate() {
+  const montant = parseFloat(document.getElementById('montant').value);
+  const duree = parseInt(document.getElementById('duree').value);
+
+  if (!montant || montant <= 0) {
+    alert('Veuillez saisir un montant valide.');
+    return;
+  }
+
+  // Année de départ = CURRENT_YEAR - duree
+  const startYear = CURRENT_YEAR - duree;
+
+  const labels = [];
+  const values = [];
+  const isProjected = []; // true si projection future
+
+  let val = montant;
+  labels.push(startYear.toString());
+  values.push(val);
+  isProjected.push(false);
+
+  for (let y = startYear + 1; y <= startYear + duree; y++) {
+    let rate;
+    if (y <= MAX_HISTORY_YEAR) {
+      rate = inflationData[y] !== undefined ? inflationData[y] : INFLATION_FUTURE;
+      isProjected.push(false);
+    } else {
+      rate = INFLATION_FUTURE;
+      isProjected.push(true);
+    }
+    val = val / (1 + rate / 100);
+    labels.push(y.toString());
+    values.push(Math.round(val * 100) / 100);
+  }
+
+  const totalLoss = ((montant - val) / montant * 100).toFixed(1);
+  const endYear = startYear + duree;
+  const hasProjection = endYear > MAX_HISTORY_YEAR;
+
+  // Headline
+  const headline = document.getElementById('headline');
+  headline.innerHTML = `Si j'avais épargné <strong>${montant.toLocaleString('fr-FR')} €</strong> en <strong>${startYear}</strong> sur un compte courant,<br>j'aurais aujourd'hui <strong>${val.toFixed(0)} €</strong> de pouvoir d'achat réel.`;
+
+  // Summary values
+  document.getElementById('valInitiale').textContent = montant.toLocaleString('fr-FR') + ' €';
+  document.getElementById('valFinale').textContent = val.toFixed(0) + ' €';
+  document.getElementById('valPerdue').textContent = '-' + (montant - val).toFixed(0) + ' €';
+  document.getElementById('lossBadge').textContent = '-' + totalLoss + ' %';
+
+  // Split into historical vs projected
+  const histIdx = values.findIndex((_, i) => isProjected[i]);
+  let histLabels, histVals, projLabels, projVals;
+
+  if (histIdx === -1) {
+    histLabels = labels; histVals = values;
+    projLabels = []; projVals = [];
+  } else {
+    histLabels = labels.slice(0, histIdx + 1);
+    histVals = values.slice(0, histIdx + 1);
+    projLabels = labels.slice(histIdx);
+    projVals = values.slice(histIdx);
+  }
+
+  // Chart
+  if (chartInstance) chartInstance.destroy();
+
+  const ctx = document.getElementById('myChart').getContext('2d');
+
+  const histDataset = {
+    label: 'Valeur réelle (€)',
+    data: histLabels.map((l, i) => ({ x: l, y: histVals[i] })),
+    borderColor: '#2E7D32',
+    backgroundColor: 'rgba(46,125,50,0.12)',
+    borderWidth: 3,
+    pointRadius: 4,
+    pointBackgroundColor: '#2E7D32',
+    fill: true,
+    tension: 0.4,
+  };
+
+  const datasets = [histDataset];
+
+  if (projVals.length > 1) {
+    datasets.push({
+      label: 'Projection (2% d\'inflation)',
+      data: projLabels.map((l, i) => ({ x: l, y: projVals[i] })),
+      borderColor: '#1B5E20',
+      borderDash: [8, 5],
+      borderWidth: 2.5,
+      pointRadius: 3,
+      pointBackgroundColor: '#1B5E20',
+      fill: false,
+      tension: 0.3,
+    });
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          type: 'category',
+          labels: labels,
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { color: '#8A7A6A', font: { size: 11, family: 'DM Sans' } }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: {
+            color: '#8A7A6A',
+            font: { size: 11, family: 'DM Sans' },
+            callback: v => v.toLocaleString('fr-FR') + ' €'
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => 'Valeur réelle : ' + ctx.parsed.y.toLocaleString('fr-FR', {minimumFractionDigits:0, maximumFractionDigits:0}) + ' €'
+          }
+        }
+      },
+      animation: { duration: 800, easing: 'easeOutCubic' }
+    }
+  });
+
+  const resultEl = document.getElementById('result');
+  resultEl.style.display = 'block';
+  resultEl.style.animation = 'none';
+  resultEl.offsetHeight;
+  resultEl.style.animation = 'fadeUp 0.5s ease both';
+  resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
